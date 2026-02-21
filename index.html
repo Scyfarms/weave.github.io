@@ -170,35 +170,30 @@ logoutBtn.onclick=async()=>{await Parse.User.logOut();location.reload();};
 
 postBtn.onclick = async () => {
   try {
-    console.log("Post clicked");
-
     const user = Parse.User.current();
-    if (!user) {
-      alert("You are not logged in");
-      return;
-    }
+    if (!user) return alert("Login first");
 
     const content = newPost.value.trim();
-    if (!content) {
-      alert("Post cannot be empty");
-      return;
-    }
+    if (!content) return alert("Post cannot be empty");
 
     const Post = Parse.Object.extend("Posts");
     const post = new Post();
 
     post.set("username", user.get("username"));
     post.set("content", content);
-    post.set("pfp", user.get("pfp") || null);
+
+    const userPfp = user.get("pfp");
+    if (userPfp instanceof Parse.File) {
+      post.set("pfp", userPfp);
+    }
 
     await post.save();
 
-    console.log("Post saved!");
     newPost.value = "";
     loadPosts();
 
   } catch (err) {
-    console.error("POST ERROR:", err);
+    console.error(err);
     alert("Error posting: " + err.message);
   }
 };
