@@ -13,74 +13,65 @@
 
 <div class="flex min-h-screen">
 
-  <!-- SIDEBAR -->
-  <nav class="w-64 p-6 space-y-4 shadow bg-white dark:bg-gray-800">
+<!-- SIDEBAR -->
+<nav class="w-64 p-6 space-y-4 shadow bg-white dark:bg-gray-800">
+<h1 class="text-2xl font-bold">Weave</h1>
 
-    <h1 class="text-2xl font-bold">Weave</h1>
+<button id="searchToggle" class="w-full text-left p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700">🔍 Search</button>
+<button id="settingsBtn" class="w-full text-left p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700">⚙️ Settings</button>
 
-    <button id="homeBtn" class="w-full text-left p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700">Home</button>
+<div>
+<h3 class="font-semibold mb-2">Following</h3>
+<div id="followingList" class="flex flex-wrap gap-2"></div>
+</div>
 
-    <button id="searchToggle" class="w-full text-left p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700">🔍 Search</button>
+<button id="logoutBtn" class="w-full text-left p-2 rounded text-red-500 hover:bg-gray-200 dark:hover:bg-gray-700">Logout</button>
+</nav>
 
-    <button id="settingsBtn" class="w-full text-left p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700">⚙️ Settings</button>
+<!-- MAIN -->
+<main class="flex-1 p-6">
 
-    <button id="logoutBtn" class="w-full text-left p-2 rounded text-red-500 hover:bg-gray-200 dark:hover:bg-gray-700">Logout</button>
+<div id="searchPanel" class="hidden mb-4">
+<input id="searchInput" placeholder="Search users..."
+class="w-full p-2 border rounded dark:bg-gray-700">
+<div id="searchResults" class="mt-2 space-y-2"></div>
+</div>
 
-  </nav>
+<div class="p-4 mb-4 shadow rounded-xl bg-white dark:bg-gray-800">
+<textarea id="newPost" class="w-full p-2 border rounded mb-2 dark:bg-gray-700"
+placeholder="What’s happening?"></textarea>
+<button id="postBtn" class="bg-blue-500 text-white px-4 py-2 rounded">Post</button>
+</div>
 
-  <!-- MAIN -->
-  <main class="flex-1 p-6">
-
-    <!-- SEARCH PANEL -->
-    <div id="searchPanel" class="hidden mb-4">
-      <input id="searchInput" placeholder="Search usernames..."
-        class="w-full p-2 border rounded bg-white dark:bg-gray-700">
-      <div id="searchResults" class="mt-2 space-y-2"></div>
-    </div>
-
-    <!-- POST BOX -->
-    <div class="p-4 mb-4 shadow rounded-xl bg-white dark:bg-gray-800">
-      <textarea id="newPost" class="w-full p-2 border rounded mb-2 bg-white dark:bg-gray-700"
-        placeholder="What’s happening?"></textarea>
-      <button id="postBtn" class="bg-blue-500 text-white px-4 py-2 rounded">Post</button>
-    </div>
-
-    <div id="feed" class="space-y-4"></div>
-
-  </main>
+<div id="feed" class="space-y-4"></div>
+</main>
 </div>
 
 <!-- SETTINGS -->
 <div id="settingsModal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center">
-  <div class="p-6 rounded-xl w-80 bg-white dark:bg-gray-800">
+<div class="p-6 rounded-xl w-80 bg-white dark:bg-gray-800">
+<h2 class="text-xl font-bold mb-4">Settings</h2>
 
-    <h2 class="text-xl font-bold mb-4">Settings</h2>
+<div class="flex justify-between items-center mb-4">
+<span>Dark Mode</span>
+<button id="darkToggle" class="px-3 py-1 rounded bg-gray-300 dark:bg-gray-700">Toggle</button>
+</div>
 
-    <!-- DARK MODE -->
-    <div class="flex justify-between items-center mb-4">
-      <span>Dark Mode</span>
-      <button id="darkToggle" class="px-3 py-1 rounded bg-gray-300 dark:bg-gray-700">Toggle</button>
-    </div>
+<input type="file" id="pfpUpload" accept="image/*">
+<button id="savePfp" class="mt-2 w-full bg-blue-500 text-white p-2 rounded">Save PFP</button>
 
-    <!-- PFP UPLOAD -->
-    <div class="mb-4">
-      <label class="block mb-1 font-semibold">Profile Picture</label>
-      <input type="file" id="pfpUpload" accept="image/*">
-      <button id="savePfp" class="mt-2 w-full bg-blue-500 text-white p-2 rounded">Save PFP</button>
-    </div>
-
-    <button id="closeSettings" class="w-full bg-gray-500 text-white p-2 rounded">Close</button>
-  </div>
+<button id="closeSettings" class="mt-4 w-full bg-gray-500 text-white p-2 rounded">Close</button>
+</div>
 </div>
 
 <!-- LOGIN -->
 <div id="authModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center">
-  <div class="p-6 rounded-xl w-96 bg-white dark:bg-gray-800">
-    <h2 class="text-xl font-bold mb-4">Login</h2>
-    <input id="username" class="w-full p-2 border rounded mb-2 dark:bg-gray-700" placeholder="Username">
-    <input id="password" type="password" class="w-full p-2 border rounded mb-2 dark:bg-gray-700" placeholder="Password">
-    <button id="loginBtn" class="w-full bg-blue-500 text-white p-2 rounded">Login</button>
-  </div>
+<div class="p-6 rounded-xl w-96 bg-white dark:bg-gray-800">
+<h2 class="text-xl font-bold mb-4">Login</h2>
+<input id="username" class="w-full p-2 border rounded mb-2 dark:bg-gray-700" placeholder="Username">
+<input id="password" type="password" class="w-full p-2 border rounded mb-2 dark:bg-gray-700" placeholder="Password">
+<button id="loginBtn" class="w-full bg-blue-500 text-white p-2 rounded">Login</button>
+</div>
 </div>
 
 <script>
@@ -89,13 +80,19 @@ document.addEventListener("DOMContentLoaded",()=>{
 Parse.initialize("lwPJm4UFv3m4pZypU2ms9BVQvgFZ35lVOheiW9vx","MHinq9g59aQSit8lalBEYaC1MjLo8rZkhFzdqxMP");
 Parse.serverURL="https://parseapi.back4app.com/";
 
-/* ELEMENTS */
 const feed=document.getElementById("feed");
 const newPost=document.getElementById("newPost");
 const postBtn=document.getElementById("postBtn");
 const loginBtn=document.getElementById("loginBtn");
 const logoutBtn=document.getElementById("logoutBtn");
 const authModal=document.getElementById("authModal");
+
+const searchToggle=document.getElementById("searchToggle");
+const searchPanel=document.getElementById("searchPanel");
+const searchInput=document.getElementById("searchInput");
+const searchResults=document.getElementById("searchResults");
+
+const followingList=document.getElementById("followingList");
 
 const settingsBtn=document.getElementById("settingsBtn");
 const settingsModal=document.getElementById("settingsModal");
@@ -105,126 +102,195 @@ const darkToggle=document.getElementById("darkToggle");
 const pfpUpload=document.getElementById("pfpUpload");
 const savePfp=document.getElementById("savePfp");
 
-const searchToggle=document.getElementById("searchToggle");
-const searchPanel=document.getElementById("searchPanel");
-const searchInput=document.getElementById("searchInput");
-const searchResults=document.getElementById("searchResults");
-
 /* DARK MODE */
-function setDark(enabled){
-  document.documentElement.classList.toggle("dark",enabled);
-  localStorage.setItem("theme",enabled?"dark":"light");
-}
-if(localStorage.getItem("theme")==="dark") setDark(true);
+function setDark(e){document.documentElement.classList.toggle("dark",e);localStorage.setItem("theme",e?"dark":"light")}
+if(localStorage.getItem("theme")==="dark")setDark(true);
 darkToggle.onclick=()=>setDark(!document.documentElement.classList.contains("dark"));
 
-/* SETTINGS */
-settingsBtn.onclick=()=>{settingsModal.classList.remove("hidden");settingsModal.classList.add("flex");}
+settingsBtn.onclick=()=>{settingsModal.classList.remove("hidden");settingsModal.classList.add("flex")}
 closeSettings.onclick=()=>settingsModal.classList.add("hidden");
 
-/* PFP UPLOAD */
 savePfp.onclick=async()=>{
-  const file=pfpUpload.files[0];
-  if(!file) return alert("Choose an image");
-
-  const parseFile=new Parse.File(file.name,file);
-  await parseFile.save();
-
-  const user=Parse.User.current();
-  user.set("pfp",parseFile);
-  await user.save();
-
-  alert("PFP updated!");
+ const file=pfpUpload.files[0];
+ if(!file)return alert("Choose image");
+ const parseFile=new Parse.File(file.name,file);
+ await parseFile.save();
+ const user=Parse.User.current();
+ user.set("pfp",parseFile);
+ await user.save();
+ alert("PFP updated");
 };
+
+/* FOLLOWING */
+async function loadFollowing(){
+ followingList.innerHTML="";
+ const Follow=Parse.Object.extend("Follows");
+ const q=new Parse.Query(Follow);
+ q.equalTo("from",Parse.User.current());
+ q.include("to");
+ const results=await q.find();
+
+ results.forEach(f=>{
+   const u=f.get("to");
+   const img=document.createElement("img");
+   img.src=u.get("pfp")?.url()||"https://placehold.co/40";
+   img.className="w-8 h-8 rounded-full";
+   followingList.appendChild(img);
+ });
+}
 
 /* SEARCH */
 searchToggle.onclick=()=>searchPanel.classList.toggle("hidden");
-
 searchInput.oninput=async()=>{
-  const text=searchInput.value.trim();
-  if(!text){searchResults.innerHTML="";return;}
+ const text=searchInput.value.trim();
+ if(!text){searchResults.innerHTML="";return;}
+ const q=new Parse.Query(Parse.User);
+ q.contains("username",text);
+ const users=await q.limit(5).find();
 
-  const query=new Parse.Query(Parse.User);
-  query.contains("username",text);
-  const results=await query.limit(5).find();
+ searchResults.innerHTML="";
+ users.forEach(u=>{
+  const div=document.createElement("div");
+  div.className="p-2 rounded bg-white dark:bg-gray-800 shadow flex justify-between";
 
-  searchResults.innerHTML="";
-  results.forEach(u=>{
-    const div=document.createElement("div");
-    div.className="p-2 rounded bg-white dark:bg-gray-800 shadow";
-    div.textContent="@"+u.get("username");
-    searchResults.appendChild(div);
-  });
+  div.innerHTML=`<span>@${u.get("username")}</span>
+  <button class="followBtn bg-blue-500 text-white px-2 rounded">Follow</button>`;
+
+  div.querySelector(".followBtn").onclick=async()=>{
+    const Follow=Parse.Object.extend("Follows");
+    const f=new Follow();
+    f.set("from",Parse.User.current());
+    f.set("to",u);
+    await f.save();
+    loadFollowing();
+  };
+
+  searchResults.appendChild(div);
+ });
 };
+
+/* POST */
+postBtn.onclick=async()=>{
+ try{
+  const user=Parse.User.current();
+  if(!user)return alert("Login first");
+
+  const content=newPost.value.trim();
+  if(!content)return alert("Write something");
+
+  const Post=Parse.Object.extend("Posts");
+  const post=new Post();
+
+  post.set("username",user.get("username"));
+  post.set("content",content);
+
+  const pfp=user.get("pfp");
+  if(pfp && typeof pfp.url==="function") post.set("pfp",pfp);
+
+  await post.save();
+  newPost.value="";
+  loadPosts();
+ }catch(err){alert(err.message)}
+};
+
+/* LIKE SYSTEM */
+async function toggleLike(type,id){
+ const Like=Parse.Object.extend("Likes");
+ const q=new Parse.Query(Like);
+ q.equalTo("user",Parse.User.current());
+ q.equalTo("type",type);
+ q.equalTo("targetId",id);
+ const existing=await q.first();
+ if(existing){await existing.destroy();return;}
+ const like=new Like();
+ like.set("user",Parse.User.current());
+ like.set("type",type);
+ like.set("targetId",id);
+ await like.save();
+}
+
+/* COMMENTS */
+async function loadComments(postId,container){
+ container.innerHTML="";
+ const Comment=Parse.Object.extend("Comments");
+ const q=new Parse.Query(Comment);
+ q.equalTo("postId",postId);
+ const comments=await q.find();
+
+ comments.forEach(c=>{
+  const div=document.createElement("div");
+  div.className="ml-12 text-sm flex gap-2";
+  div.innerHTML=`<span><strong>@${c.get("username")}</strong> ${c.get("content")}</span>
+  <button class="likeComment text-blue-500">♥</button>`;
+  div.querySelector(".likeComment").onclick=()=>toggleLike("comment",c.id);
+  container.appendChild(div);
+ });
+}
+
+/* LOAD POSTS */
+async function loadPosts(){
+ feed.innerHTML="";
+ const Post=Parse.Object.extend("Posts");
+ const posts=await new Parse.Query(Post).descending("createdAt").find();
+
+ posts.forEach(p=>{
+   const div=document.createElement("div");
+   div.className="p-4 rounded-xl shadow bg-white dark:bg-gray-800";
+
+   const pfp=p.get("pfp")?.url()||"https://placehold.co/40";
+
+   div.innerHTML=`
+     <div class="flex gap-3">
+       <img src="${pfp}" class="w-10 h-10 rounded-full">
+       <div>
+         <strong>@${p.get("username")}</strong>
+         <p>${p.get("content")}</p>
+         <button class="likePost text-blue-500">♥ Like</button>
+       </div>
+     </div>
+     <div class="comments mt-2"></div>
+     <input class="commentInput w-full border rounded mt-2 p-1 dark:bg-gray-700" placeholder="Comment">
+   `;
+
+   div.querySelector(".likePost").onclick=()=>toggleLike("post",p.id);
+
+   const commentsDiv=div.querySelector(".comments");
+   const commentInput=div.querySelector(".commentInput");
+
+   commentInput.onkeydown=async e=>{
+     if(e.key==="Enter"){
+       const Comment=Parse.Object.extend("Comments");
+       const c=new Comment();
+       c.set("postId",p.id);
+       c.set("username",Parse.User.current().get("username"));
+       c.set("content",commentInput.value);
+       await c.save();
+       commentInput.value="";
+       loadComments(p.id,commentsDiv);
+     }
+   };
+
+   loadComments(p.id,commentsDiv);
+   feed.appendChild(div);
+ });
+}
 
 /* LOGIN */
 loginBtn.onclick=async()=>{
-  try{
-    await Parse.User.logIn(username.value,password.value);
-    authModal.classList.add("hidden");
-    loadPosts();
-  }catch(e){alert(e.message);}
+ try{
+  await Parse.User.logIn(username.value,password.value);
+  authModal.classList.add("hidden");
+  loadPosts();
+  loadFollowing();
+ }catch(e){alert(e.message)}
 };
 
 logoutBtn.onclick=async()=>{await Parse.User.logOut();location.reload();};
 
-postBtn.onclick = async () => {
-  try {
-    const user = Parse.User.current();
-    if (!user) return alert("Login first");
-
-    const content = newPost.value.trim();
-    if (!content) return alert("Post cannot be empty");
-
-    const Post = Parse.Object.extend("Posts");
-    const post = new Post();
-
-    post.set("username", user.get("username"));
-    post.set("content", content);
-
-    const userPfp = user.get("pfp");
-    if (userPfp instanceof Parse.File) {
-      post.set("pfp", userPfp);
-    }
-
-    await post.save();
-
-    newPost.value = "";
-    loadPosts();
-
-  } catch (err) {
-    console.error(err);
-    alert("Error posting: " + err.message);
-  }
-};
-
-/* LOAD POSTS */
-async function loadPosts(){
-  feed.innerHTML="";
-  const Post=Parse.Object.extend("Posts");
-  const posts=await new Parse.Query(Post).descending("createdAt").find();
-
-  posts.forEach(p=>{
-    const pfp=p.get("pfp")?.url() || "https://placehold.co/40";
-
-    const div=document.createElement("div");
-    div.className="p-4 rounded-xl shadow bg-white dark:bg-gray-800 flex gap-3";
-
-    div.innerHTML=`
-      <img src="${pfp}" class="w-10 h-10 rounded-full object-cover">
-      <div>
-        <strong>@${p.get("username")}</strong>
-        <p class="mt-1">${p.get("content")}</p>
-      </div>
-    `;
-    feed.appendChild(div);
-  });
-}
-
-/* AUTO LOGIN */
 if(Parse.User.current()){
-  authModal.classList.add("hidden");
-  loadPosts();
+ authModal.classList.add("hidden");
+ loadPosts();
+ loadFollowing();
 }
 
 });
