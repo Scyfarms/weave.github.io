@@ -6,48 +6,43 @@
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://npmcdn.com/parse/dist/parse.min.js"></script>
-
-<script>
-tailwind.config = { darkMode: 'class' }
-</script>
+<script>tailwind.config={darkMode:'class'}</script>
 </head>
 
 <body class="font-sans bg-white text-black dark:bg-gray-900 dark:text-white">
 
 <div class="flex min-h-screen">
 
-  <!-- Sidebar -->
+  <!-- SIDEBAR -->
   <nav class="w-64 p-6 space-y-4 shadow bg-white dark:bg-gray-800">
+
     <h1 class="text-2xl font-bold">Weave</h1>
 
-    <button id="homeBtn"
-      class="w-full text-left p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700">
-      Home
-    </button>
+    <button id="homeBtn" class="w-full text-left p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700">Home</button>
 
-    <button id="settingsBtn"
-      class="w-full text-left p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700">
-      ⚙️ Settings
-    </button>
+    <button id="searchToggle" class="w-full text-left p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700">🔍 Search</button>
 
-    <button id="logoutBtn"
-      class="w-full text-left p-2 rounded text-red-500 hover:bg-gray-200 dark:hover:bg-gray-700">
-      Logout
-    </button>
+    <button id="settingsBtn" class="w-full text-left p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700">⚙️ Settings</button>
+
+    <button id="logoutBtn" class="w-full text-left p-2 rounded text-red-500 hover:bg-gray-200 dark:hover:bg-gray-700">Logout</button>
+
   </nav>
 
-  <!-- Main -->
+  <!-- MAIN -->
   <main class="flex-1 p-6">
 
-    <div class="p-4 mb-4 shadow rounded-xl bg-white dark:bg-gray-800">
-      <textarea id="newPost"
-        class="w-full p-2 border rounded mb-2 bg-white text-black dark:bg-gray-700 dark:text-white"
-        placeholder="What’s happening?"></textarea>
+    <!-- SEARCH PANEL -->
+    <div id="searchPanel" class="hidden mb-4">
+      <input id="searchInput" placeholder="Search usernames..."
+        class="w-full p-2 border rounded bg-white dark:bg-gray-700">
+      <div id="searchResults" class="mt-2 space-y-2"></div>
+    </div>
 
-      <button id="postBtn"
-        class="bg-blue-500 text-white px-4 py-2 rounded">
-        Post
-      </button>
+    <!-- POST BOX -->
+    <div class="p-4 mb-4 shadow rounded-xl bg-white dark:bg-gray-800">
+      <textarea id="newPost" class="w-full p-2 border rounded mb-2 bg-white dark:bg-gray-700"
+        placeholder="What’s happening?"></textarea>
+      <button id="postBtn" class="bg-blue-500 text-white px-4 py-2 rounded">Post</button>
     </div>
 
     <div id="feed" class="space-y-4"></div>
@@ -55,174 +50,147 @@ tailwind.config = { darkMode: 'class' }
   </main>
 </div>
 
-<!-- SETTINGS MODAL -->
-<div id="settingsModal"
-  class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center">
-
+<!-- SETTINGS -->
+<div id="settingsModal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center">
   <div class="p-6 rounded-xl w-80 bg-white dark:bg-gray-800">
+
     <h2 class="text-xl font-bold mb-4">Settings</h2>
 
-    <div class="flex items-center justify-between">
+    <!-- DARK MODE -->
+    <div class="flex justify-between items-center mb-4">
       <span>Dark Mode</span>
-      <button id="darkToggle"
-        class="px-3 py-1 rounded bg-gray-300 dark:bg-gray-700">
-        Toggle
-      </button>
+      <button id="darkToggle" class="px-3 py-1 rounded bg-gray-300 dark:bg-gray-700">Toggle</button>
     </div>
 
-    <button id="closeSettings"
-      class="mt-4 w-full bg-blue-500 text-white p-2 rounded">
-      Close
-    </button>
+    <!-- PFP UPLOAD -->
+    <div class="mb-4">
+      <label class="block mb-1 font-semibold">Profile Picture</label>
+      <input type="file" id="pfpUpload" accept="image/*">
+      <button id="savePfp" class="mt-2 w-full bg-blue-500 text-white p-2 rounded">Save PFP</button>
+    </div>
+
+    <button id="closeSettings" class="w-full bg-gray-500 text-white p-2 rounded">Close</button>
   </div>
 </div>
 
 <!-- LOGIN -->
-<div id="authModal"
-  class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center">
-
+<div id="authModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center">
   <div class="p-6 rounded-xl w-96 bg-white dark:bg-gray-800">
     <h2 class="text-xl font-bold mb-4">Login</h2>
-
-    <input id="username"
-      class="w-full p-2 border rounded mb-2 bg-white dark:bg-gray-700"
-      placeholder="Username">
-
-    <input id="password" type="password"
-      class="w-full p-2 border rounded mb-2 bg-white dark:bg-gray-700"
-      placeholder="Password">
-
-    <button id="loginBtn"
-      class="w-full bg-blue-500 text-white p-2 rounded">
-      Login
-    </button>
+    <input id="username" class="w-full p-2 border rounded mb-2 dark:bg-gray-700" placeholder="Username">
+    <input id="password" type="password" class="w-full p-2 border rounded mb-2 dark:bg-gray-700" placeholder="Password">
+    <button id="loginBtn" class="w-full bg-blue-500 text-white p-2 rounded">Login</button>
   </div>
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded",()=>{
 
-/* ---------- PARSE ---------- */
-Parse.initialize("lwPJm4UFv3m4pZypU2ms9BVQvgFZ35lVOheiW9vx",
-                 "MHinq9g59aQSit8lalBEYaC1MjLo8rZkhFzdqxMP");
-Parse.serverURL = "https://parseapi.back4app.com/";
+Parse.initialize("lwPJm4UFv3m4pZypU2ms9BVQvgFZ35lVOheiW9vx","MHinq9g59aQSit8lalBEYaC1MjLo8rZkhFzdqxMP");
+Parse.serverURL="https://parseapi.back4app.com/";
 
-/* ---------- ELEMENTS ---------- */
-const feed = document.getElementById("feed");
-const newPost = document.getElementById("newPost");
-const postBtn = document.getElementById("postBtn");
-const loginBtn = document.getElementById("loginBtn");
-const logoutBtn = document.getElementById("logoutBtn");
-const authModal = document.getElementById("authModal");
+/* ELEMENTS */
+const feed=document.getElementById("feed");
+const newPost=document.getElementById("newPost");
+const postBtn=document.getElementById("postBtn");
+const loginBtn=document.getElementById("loginBtn");
+const logoutBtn=document.getElementById("logoutBtn");
+const authModal=document.getElementById("authModal");
 
-const settingsBtn = document.getElementById("settingsBtn");
-const settingsModal = document.getElementById("settingsModal");
-const closeSettings = document.getElementById("closeSettings");
-const darkToggle = document.getElementById("darkToggle");
+const settingsBtn=document.getElementById("settingsBtn");
+const settingsModal=document.getElementById("settingsModal");
+const closeSettings=document.getElementById("closeSettings");
+const darkToggle=document.getElementById("darkToggle");
 
-/* ---------- DARK MODE ---------- */
-async function applyDarkMode(enabled, saveToUser=true){
-  if(enabled){
-    document.documentElement.classList.add("dark");
-    localStorage.setItem("theme","dark");
-  } else {
-    document.documentElement.classList.remove("dark");
-    localStorage.setItem("theme","light");
-  }
+const pfpUpload=document.getElementById("pfpUpload");
+const savePfp=document.getElementById("savePfp");
 
-  if(saveToUser){
-    const user = Parse.User.current();
-    if(user){
-      user.set("darkMode", enabled);
-      await user.save();
-    }
-  }
+const searchToggle=document.getElementById("searchToggle");
+const searchPanel=document.getElementById("searchPanel");
+const searchInput=document.getElementById("searchInput");
+const searchResults=document.getElementById("searchResults");
+
+/* DARK MODE */
+function setDark(enabled){
+  document.documentElement.classList.toggle("dark",enabled);
+  localStorage.setItem("theme",enabled?"dark":"light");
 }
+if(localStorage.getItem("theme")==="dark") setDark(true);
+darkToggle.onclick=()=>setDark(!document.documentElement.classList.contains("dark"));
 
-darkToggle.addEventListener("click", async () => {
-  const isDark = document.documentElement.classList.contains("dark");
-  await applyDarkMode(!isDark);
-});
+/* SETTINGS */
+settingsBtn.onclick=()=>{settingsModal.classList.remove("hidden");settingsModal.classList.add("flex");}
+closeSettings.onclick=()=>settingsModal.classList.add("hidden");
 
-/* ---------- SETTINGS ---------- */
-settingsBtn.onclick = () => {
-  settingsModal.classList.remove("hidden");
-  settingsModal.classList.add("flex");
+/* PFP UPLOAD */
+savePfp.onclick=async()=>{
+  const file=pfpUpload.files[0];
+  if(!file) return alert("Choose an image");
+
+  const parseFile=new Parse.File(file.name,file);
+  await parseFile.save();
+
+  const user=Parse.User.current();
+  user.set("pfp",parseFile);
+  await user.save();
+
+  alert("PFP updated!");
 };
 
-closeSettings.onclick = () => {
-  settingsModal.classList.add("hidden");
-};
-
-/* ---------- LOGIN ---------- */
-loginBtn.onclick = async () => {
+/* LOGIN */
+loginBtn.onclick=async()=>{
   try{
-    const user = await Parse.User.logIn(username.value, password.value);
+    await Parse.User.logIn(username.value,password.value);
     authModal.classList.add("hidden");
-
-    if(user.get("darkMode")){
-      applyDarkMode(true,false);
-    }
-
     loadPosts();
-  }catch(err){
-    alert(err.message);
-  }
+  }catch(e){alert(e.message);}
 };
 
-/* ---------- LOGOUT ---------- */
-logoutBtn.onclick = async () => {
-  await Parse.User.logOut();
-  location.reload();
-};
+logoutBtn.onclick=async()=>{await Parse.User.logOut();location.reload();};
 
-/* ---------- CREATE POST ---------- */
-postBtn.onclick = async () => {
-  const user = Parse.User.current();
+/* POST */
+postBtn.onclick=async()=>{
+  const user=Parse.User.current();
   if(!user) return alert("Login first");
 
-  const content = newPost.value.trim();
-  if(!content) return alert("Post empty");
+  const Post=Parse.Object.extend("Posts");
+  const post=new Post();
 
-  const Post = Parse.Object.extend("Posts");
-  const post = new Post();
-  post.set("username", user.get("username"));
-  post.set("content", content);
+  post.set("username",user.get("username"));
+  post.set("content",newPost.value);
+  post.set("pfp",user.get("pfp"));
 
   await post.save();
-  newPost.value = "";
+  newPost.value="";
   loadPosts();
 };
 
-/* ---------- LOAD POSTS ---------- */
+/* LOAD POSTS */
 async function loadPosts(){
-  feed.innerHTML = "";
-
-  const Post = Parse.Object.extend("Posts");
-  const posts = await new Parse.Query(Post)
-    .descending("createdAt")
-    .find();
+  feed.innerHTML="";
+  const Post=Parse.Object.extend("Posts");
+  const posts=await new Parse.Query(Post).descending("createdAt").find();
 
   posts.forEach(p=>{
-    const div = document.createElement("div");
-    div.className = "p-4 rounded-xl shadow bg-white dark:bg-gray-800";
-    div.innerHTML = `<strong>@${p.get("username")}</strong>
-                     <p class="mt-2">${p.get("content")}</p>`;
+    const pfp=p.get("pfp")?.url() || "https://placehold.co/40";
+
+    const div=document.createElement("div");
+    div.className="p-4 rounded-xl shadow bg-white dark:bg-gray-800 flex gap-3";
+
+    div.innerHTML=`
+      <img src="${pfp}" class="w-10 h-10 rounded-full object-cover">
+      <div>
+        <strong>@${p.get("username")}</strong>
+        <p class="mt-1">${p.get("content")}</p>
+      </div>
+    `;
     feed.appendChild(div);
   });
 }
 
-/* ---------- AUTO LOGIN ---------- */
-const currentUser = Parse.User.current();
-if(currentUser){
+/* AUTO LOGIN */
+if(Parse.User.current()){
   authModal.classList.add("hidden");
-
-  if(currentUser.get("darkMode")){
-    applyDarkMode(true,false);
-  } else if(localStorage.getItem("theme")==="dark"){
-    applyDarkMode(true,false);
-  }
-
   loadPosts();
 }
 
