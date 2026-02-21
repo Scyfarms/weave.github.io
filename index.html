@@ -168,21 +168,39 @@ loginBtn.onclick=async()=>{
 
 logoutBtn.onclick=async()=>{await Parse.User.logOut();location.reload();};
 
-/* POST */
-postBtn.onclick=async()=>{
-  const user=Parse.User.current();
-  if(!user) return alert("Login first");
+postBtn.onclick = async () => {
+  try {
+    console.log("Post clicked");
 
-  const Post=Parse.Object.extend("Posts");
-  const post=new Post();
+    const user = Parse.User.current();
+    if (!user) {
+      alert("You are not logged in");
+      return;
+    }
 
-  post.set("username",user.get("username"));
-  post.set("content",newPost.value);
-  post.set("pfp",user.get("pfp"));
+    const content = newPost.value.trim();
+    if (!content) {
+      alert("Post cannot be empty");
+      return;
+    }
 
-  await post.save();
-  newPost.value="";
-  loadPosts();
+    const Post = Parse.Object.extend("Posts");
+    const post = new Post();
+
+    post.set("username", user.get("username"));
+    post.set("content", content);
+    post.set("pfp", user.get("pfp") || null);
+
+    await post.save();
+
+    console.log("Post saved!");
+    newPost.value = "";
+    loadPosts();
+
+  } catch (err) {
+    console.error("POST ERROR:", err);
+    alert("Error posting: " + err.message);
+  }
 };
 
 /* LOAD POSTS */
