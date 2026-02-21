@@ -20,6 +20,8 @@
 
     <button id="homeBtn" class="w-full text-left p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700">Home</button>
 
+    <button id="searchToggle" class="w-full text-left p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700">🔍 Search</button>
+
     <button id="settingsBtn" class="w-full text-left p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700">⚙️ Settings</button>
 
     <button id="logoutBtn" class="w-full text-left p-2 rounded text-red-500 hover:bg-gray-200 dark:hover:bg-gray-700">Logout</button>
@@ -133,6 +135,26 @@ savePfp.onclick=async()=>{
   await user.save();
 
   alert("PFP updated!");
+};
+
+/* SEARCH */
+searchToggle.onclick=()=>searchPanel.classList.toggle("hidden");
+
+searchInput.oninput=async()=>{
+  const text=searchInput.value.trim();
+  if(!text){searchResults.innerHTML="";return;}
+
+  const query=new Parse.Query(Parse.User);
+  query.contains("username",text);
+  const results=await query.limit(5).find();
+
+  searchResults.innerHTML="";
+  results.forEach(u=>{
+    const div=document.createElement("div");
+    div.className="p-2 rounded bg-white dark:bg-gray-800 shadow";
+    div.textContent="@"+u.get("username");
+    searchResults.appendChild(div);
+  });
 };
 
 /* LOGIN */
