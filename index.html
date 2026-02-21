@@ -1,17 +1,14 @@
 <!DOCTYPE html>
-<html lang="en" class="">
+<html lang="en">
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Weave</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://npmcdn.com/parse/dist/parse.min.js"></script>
-<link rel="stylesheet" href="styles.css">
 
 <script>
-tailwind.config = {
-  darkMode: 'class'
-}
+tailwind.config = { darkMode: 'class' }
 </script>
 </head>
 
@@ -20,179 +17,214 @@ tailwind.config = {
 <div class="flex min-h-screen">
 
   <!-- Sidebar -->
-  <nav class="w-64 p-6 space-y-4 shadow card">
+  <nav class="w-64 p-6 space-y-4 shadow bg-white dark:bg-gray-800">
     <h1 class="text-2xl font-bold">Weave</h1>
-    <button id="homeBtn" class="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700">Home</button>
-    <button id="settingsBtn" class="p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700">Settings</button>
-    <button id="logoutBtn" class="p-2 rounded text-red-500">Logout</button>
+
+    <button id="homeBtn"
+      class="w-full text-left p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700">
+      Home
+    </button>
+
+    <button id="settingsBtn"
+      class="w-full text-left p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700">
+      ⚙️ Settings
+    </button>
+
+    <button id="logoutBtn"
+      class="w-full text-left p-2 rounded text-red-500 hover:bg-gray-200 dark:hover:bg-gray-700">
+      Logout
+    </button>
   </nav>
 
   <!-- Main -->
   <main class="flex-1 p-6">
 
-    <!-- Post box -->
-    <div class="card p-4 mb-4 shadow">
-      <textarea id="newPost" class="w-full p-2 border rounded mb-2 bg-white text-black dark:bg-gray-800 dark:text-white"
-        placeholder="What’s Weaving?"></textarea>
-      <button id="postBtn" class="bg-blue-500 text-white px-4 py-2 rounded">
+    <div class="p-4 mb-4 shadow rounded-xl bg-white dark:bg-gray-800">
+      <textarea id="newPost"
+        class="w-full p-2 border rounded mb-2 bg-white text-black dark:bg-gray-700 dark:text-white"
+        placeholder="What’s happening?"></textarea>
+
+      <button id="postBtn"
+        class="bg-blue-500 text-white px-4 py-2 rounded">
         Post
       </button>
     </div>
 
-    <!-- Feed -->
     <div id="feed" class="space-y-4"></div>
 
   </main>
 </div>
 
-<!-- Settings Modal -->
-<div id="settingsModal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center">
-  <div class="card p-6 rounded-xl w-80 bg-white dark:bg-gray-800">
+<!-- SETTINGS MODAL -->
+<div id="settingsModal"
+  class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center">
+
+  <div class="p-6 rounded-xl w-80 bg-white dark:bg-gray-800">
     <h2 class="text-xl font-bold mb-4">Settings</h2>
 
     <div class="flex items-center justify-between">
       <span>Dark Mode</span>
-      <button id="darkToggle" class="bg-gray-300 dark:bg-gray-700 px-3 py-1 rounded">
+      <button id="darkToggle"
+        class="px-3 py-1 rounded bg-gray-300 dark:bg-gray-700">
         Toggle
       </button>
     </div>
 
-    <button id="closeSettings" class="mt-4 w-full bg-blue-500 text-white p-2 rounded">
+    <button id="closeSettings"
+      class="mt-4 w-full bg-blue-500 text-white p-2 rounded">
       Close
     </button>
   </div>
 </div>
 
-<!-- Login Modal -->
-<div id="authModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center">
-  <div class="card p-6 rounded-xl w-96 bg-white dark:bg-gray-800">
+<!-- LOGIN -->
+<div id="authModal"
+  class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center">
+
+  <div class="p-6 rounded-xl w-96 bg-white dark:bg-gray-800">
     <h2 class="text-xl font-bold mb-4">Login</h2>
-    <input id="username" class="w-full p-2 border rounded mb-2 bg-white text-black dark:bg-gray-700 dark:text-white" placeholder="Username">
-    <input id="password" type="password" class="w-full p-2 border rounded mb-2 bg-white text-black dark:bg-gray-700 dark:text-white" placeholder="Password">
-    <button id="loginBtn" class="w-full bg-blue-500 text-white p-2 rounded">Login</button>
+
+    <input id="username"
+      class="w-full p-2 border rounded mb-2 bg-white dark:bg-gray-700"
+      placeholder="Username">
+
+    <input id="password" type="password"
+      class="w-full p-2 border rounded mb-2 bg-white dark:bg-gray-700"
+      placeholder="Password">
+
+    <button id="loginBtn"
+      class="w-full bg-blue-500 text-white p-2 rounded">
+      Login
+    </button>
   </div>
 </div>
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
 
-  /* ---------- DARK MODE ---------- */
-  function setDarkMode(enabled){
-    if(enabled){
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme","dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme","light");
-    }
+/* ---------- PARSE ---------- */
+Parse.initialize("lwPJm4UFv3m4pZypU2ms9BVQvgFZ35lVOheiW9vx",
+                 "MHinq9g59aQSit8lalBEYaC1MjLo8rZkhFzdqxMP");
+Parse.serverURL = "https://parseapi.back4app.com/";
+
+/* ---------- ELEMENTS ---------- */
+const feed = document.getElementById("feed");
+const newPost = document.getElementById("newPost");
+const postBtn = document.getElementById("postBtn");
+const loginBtn = document.getElementById("loginBtn");
+const logoutBtn = document.getElementById("logoutBtn");
+const authModal = document.getElementById("authModal");
+
+const settingsBtn = document.getElementById("settingsBtn");
+const settingsModal = document.getElementById("settingsModal");
+const closeSettings = document.getElementById("closeSettings");
+const darkToggle = document.getElementById("darkToggle");
+
+/* ---------- DARK MODE ---------- */
+async function applyDarkMode(enabled, saveToUser=true){
+  if(enabled){
+    document.documentElement.classList.add("dark");
+    localStorage.setItem("theme","dark");
+  } else {
+    document.documentElement.classList.remove("dark");
+    localStorage.setItem("theme","light");
   }
 
-  if(localStorage.getItem("theme") === "dark"){
-    setDarkMode(true);
-  }
-
-  /* ---------- SETTINGS ---------- */
-  const settingsBtn = document.getElementById("settingsBtn");
-  const settingsModal = document.getElementById("settingsModal");
-  const closeSettings = document.getElementById("closeSettings");
-  const darkToggle = document.getElementById("darkToggle");
-
-  settingsBtn.addEventListener("click", () => {
-    settingsModal.classList.remove("hidden");
-    settingsModal.classList.add("flex");
-  });
-
-  closeSettings.addEventListener("click", () => {
-    settingsModal.classList.add("hidden");
-  });
-
-  darkToggle.addEventListener("click", () => {
-    const isDark = document.documentElement.classList.contains("dark");
-    setDarkMode(!isDark);
-  });
-
-  /* ---------- PARSE INIT ---------- */
-  Parse.initialize("lwPJm4UFv3m4pZypU2ms9BVQvgFZ35lVOheiW9vx","MHinq9g59aQSit8lalBEYaC1MjLo8rZkhFzdqxMP");
-  Parse.serverURL = "https://parseapi.back4app.com/";
-
-  const feed = document.getElementById("feed");
-  const newPost = document.getElementById("newPost");
-  const postBtn = document.getElementById("postBtn");
-  const loginBtn = document.getElementById("loginBtn");
-  const logoutBtn = document.getElementById("logoutBtn");
-  const authModal = document.getElementById("authModal");
-
-  /* ---------- LOGIN ---------- */
-  loginBtn.addEventListener("click", async () => {
-    try {
-      await Parse.User.logIn(username.value, password.value);
-      authModal.classList.add("hidden");
-      loadPosts();
-    } catch(err){
-      alert(err.message);
-    }
-  });
-
-  logoutBtn.addEventListener("click", async () => {
-    await Parse.User.logOut();
-    location.reload();
-  });
-
-  /* ---------- CREATE POST ---------- */
-  postBtn.addEventListener("click", async () => {
-    try {
-      const user = Parse.User.current();
-      if(!user) return alert("Login first");
-
-      const content = newPost.value.trim();
-      if(!content) return alert("Post is empty");
-
-      const Post = Parse.Object.extend("Posts");
-      const post = new Post();
-      post.set("username", user.get("username"));
-      post.set("content", content);
-
-      await post.save();
-
-      newPost.value = "";
-      loadPosts();
-
-    } catch(err){
-      console.error(err);
-      alert("Error posting");
-    }
-  });
-
-  /* ---------- LOAD POSTS ---------- */
-  async function loadPosts(){
-    try {
-      feed.innerHTML = "";
-
-      const Post = Parse.Object.extend("Posts");
-      const posts = await new Parse.Query(Post)
-        .descending("createdAt")
-        .find();
-
-      posts.forEach(post => {
-        const div = document.createElement("div");
-        div.className = "card p-4 shadow rounded-xl bg-white dark:bg-gray-800";
-        div.innerHTML = `
-          <strong>@${post.get("username")}</strong>
-          <p class="mt-2">${post.get("content")}</p>
-        `;
-        feed.appendChild(div);
-      });
-
-    } catch(err){
-      console.error(err);
+  if(saveToUser){
+    const user = Parse.User.current();
+    if(user){
+      user.set("darkMode", enabled);
+      await user.save();
     }
   }
+}
 
-  /* ---------- AUTO LOGIN ---------- */
-  if(Parse.User.current()){
+darkToggle.addEventListener("click", async () => {
+  const isDark = document.documentElement.classList.contains("dark");
+  await applyDarkMode(!isDark);
+});
+
+/* ---------- SETTINGS ---------- */
+settingsBtn.onclick = () => {
+  settingsModal.classList.remove("hidden");
+  settingsModal.classList.add("flex");
+};
+
+closeSettings.onclick = () => {
+  settingsModal.classList.add("hidden");
+};
+
+/* ---------- LOGIN ---------- */
+loginBtn.onclick = async () => {
+  try{
+    const user = await Parse.User.logIn(username.value, password.value);
     authModal.classList.add("hidden");
+
+    if(user.get("darkMode")){
+      applyDarkMode(true,false);
+    }
+
     loadPosts();
+  }catch(err){
+    alert(err.message);
   }
+};
+
+/* ---------- LOGOUT ---------- */
+logoutBtn.onclick = async () => {
+  await Parse.User.logOut();
+  location.reload();
+};
+
+/* ---------- CREATE POST ---------- */
+postBtn.onclick = async () => {
+  const user = Parse.User.current();
+  if(!user) return alert("Login first");
+
+  const content = newPost.value.trim();
+  if(!content) return alert("Post empty");
+
+  const Post = Parse.Object.extend("Posts");
+  const post = new Post();
+  post.set("username", user.get("username"));
+  post.set("content", content);
+
+  await post.save();
+  newPost.value = "";
+  loadPosts();
+};
+
+/* ---------- LOAD POSTS ---------- */
+async function loadPosts(){
+  feed.innerHTML = "";
+
+  const Post = Parse.Object.extend("Posts");
+  const posts = await new Parse.Query(Post)
+    .descending("createdAt")
+    .find();
+
+  posts.forEach(p=>{
+    const div = document.createElement("div");
+    div.className = "p-4 rounded-xl shadow bg-white dark:bg-gray-800";
+    div.innerHTML = `<strong>@${p.get("username")}</strong>
+                     <p class="mt-2">${p.get("content")}</p>`;
+    feed.appendChild(div);
+  });
+}
+
+/* ---------- AUTO LOGIN ---------- */
+const currentUser = Parse.User.current();
+if(currentUser){
+  authModal.classList.add("hidden");
+
+  if(currentUser.get("darkMode")){
+    applyDarkMode(true,false);
+  } else if(localStorage.getItem("theme")==="dark"){
+    applyDarkMode(true,false);
+  }
+
+  loadPosts();
+}
 
 });
 </script>
