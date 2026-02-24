@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weave</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://npmcdn.com/parse/dist/parse.min.js"></script>
+<script>tailwind.config={darkMode:'class'}</script>
+</head>
+
+<body class="font-sans bg-white text-black dark:bg-gray-900 dark:text-white">
+
+<div class="flex min-h-screen">
+
+<!-- SIDEBAR -->
+<nav class="w-64 p-6 space-y-4 shadow bg-white dark:bg-gray-800">
+  <h1 class="text-2xl font-bold">Weave</h1>
+
+  <button id="searchToggle" class="w-full text-left p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700">🔍 Search</button>
+  <button id="settingsBtn" class="w-full text-left p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700">⚙️ Settings</button>
+
+  <div>
+    <h3 class="font-semibold mb-2">Following</h3>
+    <div id="followingList" class="flex flex-wrap gap-2"></div>
+  </div>
+
+  <button id="logoutBtn" class="w-full text-left p-2 rounded text-red-500 hover:bg-gray-200 dark:hover:bg-gray-700">Logout</button>
+</nav>
+
+<!-- MAIN -->
+<main class="flex-1 p-6">
+
+  <div id="searchPanel" class="hidden mb-4">
+    <input id="searchInput" placeholder="Search users..." class="w-full p-2 border rounded dark:bg-gray-700">
+    <div id="searchResults" class="mt-2 space-y-2"></div>
+  </div>
+
+  <!-- COMPOSER -->
+  <div class="p-4 mb-4 shadow rounded-xl bg-white dark:bg-gray-800">
+    <textarea id="newPost" class="w-full p-2 border rounded mb-3 dark:bg-gray-700" placeholder="What’s happening?"></textarea>
+
+    <div class="space-y-2">
+      <div class="grid grid-cols-1 gap-2">
+        <div>
+          <label class="block text-sm font-semibold mb-1">Add images (max 3)</label>
+          <input id="imageUpload" type="file" accept="image/*" multiple class="block w-full text-sm">
+          <div id="imageHint" class="text-xs opacity-80 mt-1"></div>
+          <div id="imagePreview" class="mt-2 flex gap-2"></div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold mb-1">Or add a video (1)</label>
+          <input id="videoUpload" type="file" accept="video/*" class="block w-full text-sm">
+          <div id="videoHint" class="text-xs opacity-80 mt-1"></div>
+          <div id="videoPreview" class="mt-2"></div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button id="postBtn" class="bg-blue-500 text-white px-4 py-2 rounded">Post</button>
+        <button id="clearMedia" class="bg-gray-200 dark:bg-gray-700 px-4 py-2 rounded">Clear media</button>
+        <div id="uploadStatus" class="text-sm opacity-80"></div>
+      </div>
+
+      <div class="w-full">
+        <div class="h-2 bg-gray-200 dark:bg-gray-700 rounded overflow-hidden hidden" id="uploadBarWrap">
+          <div class="h-2 bg-blue-500 w-0" id="uploadBar"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="feed" class="space-y-4"></div>
+</main>
+</div>
+
+<!-- SETTINGS -->
+<div id="settingsModal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center">
+  <div class="p-6 rounded-xl w-80 bg-white dark:bg-gray-800">
+    <h2 class="text-xl font-bold mb-4">Settings</h2>
+
+    <div class="flex justify-between items-center mb-4">
+      <span>Dark Mode</span>
+      <button id="darkToggle" class="px-3 py-1 rounded bg-gray-300 dark:bg-gray-700">Toggle</button>
+    </div>
+
+    <input type="file" id="pfpUpload" accept="image/*">
+    <button id="savePfp" class="mt-2 w-full bg-blue-500 text-white p-2 rounded">Save PFP</button>
+
+    <button id="closeSettings" class="mt-4 w-full bg-gray-500 text-white p-2 rounded">Close</button>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div id="authModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center">
+  <div class="p-6 rounded-xl w-96 bg-white dark:bg-gray-800">
+    <h2 class="text-xl font-bold mb-4">Login</h2>
+    <input id="username" class="w-full p-2 border rounded mb-2 dark:bg-gray-700" placeholder="Username">
+    <input id="password" type="password" class="w-full p-2 border rounded mb-2 dark:bg-gray-700" placeholder="Password">
+    <button id="loginBtn" class="w-full bg-blue-500 text-white p-2 rounded">Login</button>
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded",()=>{
+
+Parse.initialize("lwPJm4UFv3m4pZypU2ms9BVQvgFZ35lVOheiW9vx","MHinq9g59aQSit8lalBEYaC1MjLo8rZkhFzdqxMP");
+Parse.serverURL="https://parseapi.back4app.com/";
+
+const feed=document.getElementById("feed");
+const newPost=document.getElementById("newPost");
+const postBtn=document.getElementById("postBtn");
+const clearMedia=document.getElementById("clearMedia");
+const loginBtn=document.getElementById("loginBtn");
+const logoutBtn=document.getElementById("logoutBtn");
+const authModal=document.getElementById("authModal");
+
+const searchToggle=document.getElementById("searchToggle");
+const searchPanel=document.getElementById("searchPanel");
+const searchInput=document.getElementById("searchInput");
+const searchResults=document.getElementById("searchResults");
+
+const followingList=document.getElementById("followingList");
+
+const settingsBtn=document.getElementById("settingsBtn");
+const settingsModal=document.getElementById("settingsModal");
+const closeSettings=document.getElementById("closeSettings");
+const darkToggle=document.getElementById("darkToggle");
+
+const pfpUpload=document.getElementById("pfpUpload");
+const savePfp=document.getElementById("savePfp");
+
+// Media composer elements
+const imageUpload=document.getElementById("imageUpload");
+const videoUpload=document.getElementById("videoUpload");
+const imagePreview=document.getElementById("imagePreview");
+const videoPreview=document.getElementById("videoPreview");
+const imageHint=document.getElementById("imageHint");
+const videoHint=document.getElementById("videoHint");
+
+const uploadStatus=document.getElementById("uploadStatus");
+const uploadBarWrap=document.getElementById("uploadBarWrap");
+const uploadBar=document.getElementById("uploadBar");
+
+/* ----------------------
+   Utility helpers
+-----------------------*/
+function escapeHtml(str){
+  return String(str)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+function setUploadProgress(pct){
+  if(pct==null){
+    uploadBarWrap.classList.add("hidden");
+    uploadBar.style.width="0%";
+    return;
+  }
+  uploadBarWrap.classList.remove("hidden");
+  uploadBar.style.width = Math.max(0, Math.min(100, pct)) + "%";
+}
+
+function resetUploadUI(){
+  uploadStatus.textContent = "";
+  setUploadProgress(null);
+  postBtn.disabled=false;
+  postBtn.classList.remove("opacity-60");
+}
+
+function setPostingState(isPosting, msg){
+  postBtn.disabled=!!isPosting;
+  postBtn.classList.toggle("opacity-60", !!isPosting);
+  uploadStatus.textContent = msg || "";
+}
+
+function clearMediaInputs(){
+  imageUpload.value="";
+  videoUpload.value="";
+  imagePreview.innerHTML="";
+  videoPreview.innerHTML="";
+  imageHint.textContent="";
+  videoHint.textContent="";
+}
+
+/* ----------------------
+   DARK MODE
+-----------------------*/
+function setDark(e){
+  document.documentElement.classList.toggle("dark",e);
+  localStorage.setItem("theme",e?"dark":"light");
+}
+if(localStorage.getItem("theme")==="dark")setDark(true);
+darkToggle.onclick=()=>setDark(!document.documentElement.classList.contains("dark"));
+
+settingsBtn.onclick=()=>{settingsModal.classList.remove("hidden");settingsModal.classList.add("flex")}
+closeSettings.onclick=()=>settingsModal.classList.add("hidden");
+
+savePfp.onclick=async()=>{
+ const file=pfpUpload.files[0];
+ if(!file)return alert("Choose image");
+ const parseFile=new Parse.File(file.name,file);
+ await parseFile.save();
+ const user=Parse.User.current();
+ user.set("pfp",parseFile);
+ await user.save();
+ alert("PFP updated");
+};
+
+/* ----------------------
+   FOLLOWING
+-----------------------*/
+async function loadFollowing(){
+ followingList.innerHTML="";
+ const Follow=Parse.Object.extend("Follows");
+ const q=new Parse.Query(Follow);
+ q.equalTo("from",Parse.User.current());
+ q.include("to");
+ const results=await q.find();
+
+ results.forEach(f=>{
+   const u=f.get("to");
+   const img=document.createElement("img");
+   img.src=u.get("pfp")?.url()||"https://placehold.co/40";
+   img.className="w-8 h-8 rounded-full";
+   followingList.appendChild(img);
+ });
+}
+
+/* ----------------------
+   SEARCH
+-----------------------*/
+searchToggle.onclick=()=>searchPanel.classList.toggle("hidden");
+searchInput.oninput=async()=>{
+ const text=searchInput.value.trim();
+ if(!text){searchResults.innerHTML="";return;}
+ const q=new Parse.Query(Parse.User);
+ q.contains("username",text);
+ const users=await q.limit(5).find();
+
+ searchResults.innerHTML="";
+ users.forEach(u=>{
+  const div=document.createElement("div");
+  div.className="p-2 rounded bg-white dark:bg-gray-800 shadow flex justify-between";
+
+  div.innerHTML=`<span>@${escapeHtml(u.get("username"))}</span>
+  <button class="followBtn bg-blue-500 text-white px-2 rounded">Follow</button>`;
+
+  div.querySelector(".followBtn").onclick=async()=>{
+    const Follow=Parse.Object.extend("Follows");
+    const f=new Follow();
+    f.set("from",Parse.User.current());
+    f.set("to",u);
+    await f.save();
+    loadFollowing();
+  };
+
+  searchResults.appendChild(div);
+ });
+};
+
+/* ----------------------
+   Media composer behavior
+
+   Requirements implemented:
+   - images + videos
+   - stored as Parse.File
+   - max 3 images OR 1 video per post
+   - video uses thumbnail + play button
+   - video starts paused; provide play/pause + mute/unmute controls
+-----------------------*/
+
+function refreshImagePreview(){
+  imagePreview.innerHTML="";
+  const files=[...(imageUpload.files||[])];
+  if(!files.length){ imageHint.textContent=""; return; }
+
+  if(files.length>3){
+    imageHint.textContent = "Max 3 images. Extra images were ignored.";
+  } else {
+    imageHint.textContent = files.length + (files.length===1 ? " image selected" : " images selected");
+  }
+
+  files.slice(0,3).forEach(file=>{
+    const url=URL.createObjectURL(file);
+    const img=document.createElement("img");
+    img.src=url;
+    img.className="w-20 h-20 rounded object-cover border border-gray-200 dark:border-gray-700";
+    img.onload=()=>URL.revokeObjectURL(url);
+    imagePreview.appendChild(img);
+  });
+}
+
+function refreshVideoPreview(){
+  videoPreview.innerHTML="";
+  const file=videoUpload.files?.[0];
+  if(!file){ videoHint.textContent=""; return; }
+  videoHint.textContent = "1 video selected";
+
+  const box=document.createElement("div");
+  box.className="flex items-center gap-2 text-sm";
+  box.innerHTML = `<span class="px-2 py-1 rounded bg-gray-200 dark:bg-gray-700">🎬</span><span>${escapeHtml(file.name)}</span>`;
+  videoPreview.appendChild(box);
+}
+
+imageUpload.addEventListener("change",()=>{
+  // If user picks images, clear video (mutually exclusive)
+  if(imageUpload.files && imageUpload.files.length){
+    if(videoUpload.value){
+      videoUpload.value="";
+      videoPreview.innerHTML="";
+      videoHint.textContent="";
+    }
+  }
+  refreshImagePreview();
+});
+
+videoUpload.addEventListener("change",()=>{
+  // If user picks a video, clear images (mutually exclusive)
+  if(videoUpload.files && videoUpload.files.length){
+    if(imageUpload.value){
+      imageUpload.value="";
+      imagePreview.innerHTML="";
+      imageHint.textContent="";
+    }
+  }
+  refreshVideoPreview();
+});
+
+clearMedia.onclick=()=>{ clearMediaInputs(); };
+
+async function createVideoThumbnailBlob(file){
+  // Capture a frame near the start of the video and return as a PNG Blob.
+  // Works in most modern browsers; if it fails, caller can continue without a thumb.
+  return new Promise((resolve,reject)=>{
+    const video=document.createElement("video");
+    video.muted=true;
+    video.playsInline=true;
+    video.preload="metadata";
+
+    const url=URL.createObjectURL(file);
+    video.src=url;
+
+    const cleanup=()=>{
+      URL.revokeObjectURL(url);
+      video.removeAttribute("src");
+      video.load();
+    };
+
+    video.addEventListener("error",()=>{ cleanup(); reject(new Error("Could not read video")); }, {once:true});
+
+    video.addEventListener("loadedmetadata", async()=>{
+      try{
+        // Seek a tiny bit in (some browsers don't like 0)
+        const targetTime = Math.min(0.1, Math.max(0, (video.duration||1) * 0.01));
+        video.currentTime = targetTime;
+      }catch(e){
+        // Some browsers need user gesture; try frame at time 0
+        try{ video.currentTime = 0; }catch(_e){}
+      }
+    }, {once:true});
+
+    video.addEventListener("seeked",()=>{
+      try{
+        const canvas=document.createElement("canvas");
+        canvas.width = video.videoWidth || 640;
+        canvas.height = video.videoHeight || 360;
+        const ctx=canvas.getContext("2d");
+        ctx.drawImage(video,0,0,canvas.width,canvas.height);
+        canvas.toBlob((blob)=>{
+          cleanup();
+          if(!blob) return reject(new Error("Thumbnail generation failed"));
+          resolve(blob);
+        }, "image/png", 0.92);
+      }catch(err){
+        cleanup();
+        reject(err);
+      }
+    }, {once:true});
+  });
+}
+
+async function saveParseFileWithProgress(parseFile){
+  // Parse JS SDK supports progress callback in save options.
+  await parseFile.save(null, {
+    progress: (p)=>{
+      if(typeof p === "number") setUploadProgress(Math.round(p * 100));
+    }
+  });
+}
+
+/* ----------------------
+   POST
+-----------------------*/
+postBtn.onclick=async()=>{
+ try{
+  resetUploadUI();
+
+  const user=Parse.User.current();
+  if(!user)return alert("Login first");
+
+  const content=newPost.value.trim();
+  const imageFiles=[...(imageUpload.files||[])].slice(0,3);
+  const videoFile=videoUpload.files?.[0] || null;
+
+  if(!content && !imageFiles.length && !videoFile){
+    return alert("Write something or attach media");
+  }
+
+  if(imageFiles.length && videoFile){
+    return alert("Choose either images OR a video (not both)");
+  }
+
+  setPostingState(true, "Posting...");
+
+  const Post=Parse.Object.extend("Posts");
+  const post=new Post();
+
+  post.set("username",user.get("username"));
+  post.set("content",content || "");
+
+  const pfp=user.get("pfp");
+  if(pfp && typeof pfp.url==="function") post.set("pfp",pfp);
+
+  // Media fields:
+  // - images: Array<Parse.File>
+  // - video: Parse.File
+  // - videoThumb: Parse.File (png)
+  // - mediaType: "images" | "video" | "none"
+
+  if(imageFiles.length){
+    setPostingState(true, "Uploading images...");
+    const parseFiles=[];
+
+    // Upload sequentially so progress makes sense and we avoid hammering.
+    for(let i=0;i<imageFiles.length;i++){
+      const f=imageFiles[i];
+      uploadStatus.textContent = `Uploading image ${i+1}/${imageFiles.length}...`;
+      setUploadProgress(0);
+      const pf=new Parse.File(f.name, f);
+      await saveParseFileWithProgress(pf);
+      parseFiles.push(pf);
+    }
+
+    post.set("images", parseFiles);
+    post.set("mediaType", "images");
+  } else if(videoFile){
+    setPostingState(true, "Uploading video...");
+
+    // Generate thumbnail first (local), then upload thumb and video.
+    let thumbParseFile=null;
+    try{
+      uploadStatus.textContent = "Generating thumbnail...";
+      const thumbBlob = await createVideoThumbnailBlob(videoFile);
+      thumbParseFile = new Parse.File("thumb.png", thumbBlob);
+      uploadStatus.textContent = "Uploading thumbnail...";
+      setUploadProgress(0);
+      await saveParseFileWithProgress(thumbParseFile);
+    }catch(e){
+      // Continue without thumbnail if generation fails.
+      thumbParseFile=null;
+    }
+
+    const videoParseFile = new Parse.File(videoFile.name, videoFile);
+    uploadStatus.textContent = "Uploading video file...";
+    setUploadProgress(0);
+    await saveParseFileWithProgress(videoParseFile);
+
+    post.set("video", videoParseFile);
+    if(thumbParseFile) post.set("videoThumb", thumbParseFile);
+    post.set("mediaType", "video");
+  } else {
+    post.set("mediaType", "none");
+  }
+
+  setPostingState(true, "Saving post...");
+  setUploadProgress(0);
+  await post.save();
+
+  newPost.value="";
+  clearMediaInputs();
+  resetUploadUI();
+  loadPosts();
+ }catch(err){
+  resetUploadUI();
+  alert(err.message || String(err));
+ }finally{
+  setPostingState(false, "");
+  setUploadProgress(null);
+ }
+};
+
+/* ----------------------
+   LIKE SYSTEM
+-----------------------*/
+async function toggleLike(type,id){
+ const Like=Parse.Object.extend("Likes");
+ const q=new Parse.Query(Like);
+ q.equalTo("user",Parse.User.current());
+ q.equalTo("type",type);
+ q.equalTo("targetId",id);
+ const existing=await q.first();
+ if(existing){await existing.destroy();return;}
+ const like=new Like();
+ like.set("user",Parse.User.current());
+ like.set("type",type);
+ like.set("targetId",id);
+ await like.save();
+}
+
+/* ----------------------
+   COMMENTS
+-----------------------*/
+async function loadComments(postId,container){
+ container.innerHTML="";
+ const Comment=Parse.Object.extend("Comments");
+ const q=new Parse.Query(Comment);
+ q.equalTo("postId",postId);
+ const comments=await q.find();
+
+ comments.forEach(c=>{
+  const div=document.createElement("div");
+  div.className="ml-12 text-sm flex gap-2";
+  div.innerHTML=`<span><strong>@${escapeHtml(c.get("username"))}</strong> ${escapeHtml(c.get("content"))}</span>
+  <button class="likeComment text-blue-500">♥</button>`;
+  div.querySelector(".likeComment").onclick=()=>toggleLike("comment",c.id);
+  container.appendChild(div);
+ });
+}
+
+/* ----------------------
+   Feed media render helpers
+-----------------------*/
+function renderImagesGallery(files){
+  if(!Array.isArray(files) || !files.length) return "";
+  const urls = files
+    .filter(f=>f && typeof f.url === "function")
+    .slice(0,3)
+    .map(f=>f.url());
+
+  if(!urls.length) return "";
+
+  // Simple responsive gallery
+  if(urls.length===1){
+    return `
+      <div class="mt-2">
+        <img src="${urls[0]}" class="w-full max-h-[420px] rounded-lg object-cover border border-gray-200 dark:border-gray-700" loading="lazy">
+      </div>
+    `;
+  }
+
+  // 2-3 images in a grid
+  const cols = urls.length===2 ? "grid-cols-2" : "grid-cols-3";
+  return `
+    <div class="mt-2 grid ${cols} gap-2">
+      ${urls.map(u=>`<img src="${u}" class="w-full h-40 sm:h-56 rounded-lg object-cover border border-gray-200 dark:border-gray-700" loading="lazy">`).join("")}
+    </div>
+  `;
+}
+
+function renderVideoBlock(videoFile, thumbFile, postId){
+  if(!videoFile || typeof videoFile.url !== "function") return "";
+  const videoUrl = videoFile.url();
+  const thumbUrl = (thumbFile && typeof thumbFile.url === "function") ? thumbFile.url() : "";
+
+  // Create unique ids for DOM targeting
+  const vidElId = `vid_${postId}`;
+  const overlayId = `overlay_${postId}`;
+  const thumbId = `thumb_${postId}`;
+
+  return `
+    <div class="mt-2">
+      <div class="relative rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 bg-black">
+        ${thumbUrl ? `<img id="${thumbId}" src="${thumbUrl}" class="w-full max-h-[420px] object-contain bg-black" loading="lazy">` : `<div class="w-full h-60 flex items-center justify-center text-white/80">Video</div>`}
+
+        <video id="${vidElId}" class="w-full max-h-[420px] object-contain bg-black hidden" playsinline preload="metadata">
+          <source src="${videoUrl}">
+        </video>
+
+        <button id="${overlayId}" class="absolute inset-0 flex items-center justify-center">
+          <span class="px-4 py-3 rounded-full bg-black/60 text-white text-lg">▶ Play</span>
+        </button>
+      </div>
+
+      <div class="mt-2 flex gap-2">
+        <button class="playBtn px-3 py-1 rounded bg-blue-500 text-white">Play</button>
+        <button class="pauseBtn px-3 py-1 rounded bg-gray-200 dark:bg-gray-700">Pause</button>
+        <button class="muteBtn px-3 py-1 rounded bg-gray-200 dark:bg-gray-700">Mute</button>
+        <button class="unmuteBtn px-3 py-1 rounded bg-gray-200 dark:bg-gray-700">Unmute</button>
+      </div>
+    </div>
+  `;
+}
+
+function wireUpVideoControls(postDiv, postId){
+  const video = postDiv.querySelector(`#vid_${postId}`);
+  const overlay = postDiv.querySelector(`#overlay_${postId}`);
+  const thumb = postDiv.querySelector(`#thumb_${postId}`);
+
+  if(!video || !overlay) return;
+
+  function showVideo(){
+    if(thumb) thumb.classList.add("hidden");
+    video.classList.remove("hidden");
+    overlay.classList.add("hidden");
+  }
+
+  function ensureVideoVisible(){
+    // Keep it paused by default until user interacts.
+    if(video.classList.contains("hidden")) showVideo();
+  }
+
+  overlay.onclick=()=>{
+    ensureVideoVisible();
+    video.play();
+  };
+
+  const playBtn = postDiv.querySelector(".playBtn");
+  const pauseBtn = postDiv.querySelector(".pauseBtn");
+  const muteBtn = postDiv.querySelector(".muteBtn");
+  const unmuteBtn = postDiv.querySelector(".unmuteBtn");
+
+  if(playBtn) playBtn.onclick=()=>{ ensureVideoVisible(); video.play(); };
+  if(pauseBtn) pauseBtn.onclick=()=>{ ensureVideoVisible(); video.pause(); };
+  if(muteBtn) muteBtn.onclick=()=>{ ensureVideoVisible(); video.muted=true; };
+  if(unmuteBtn) unmuteBtn.onclick=()=>{ ensureVideoVisible(); video.muted=false; };
+
+  // Video is paused by default. Do not autoplay.
+  video.pause();
+  video.muted=true; // safe default; user can unmute
+}
+
+/* ----------------------
+   LOAD POSTS
+-----------------------*/
+async function loadPosts(){
+ feed.innerHTML="";
+ const Post=Parse.Object.extend("Posts");
+ const posts=await new Parse.Query(Post).descending("createdAt").find();
+
+ posts.forEach(p=>{
+   const div=document.createElement("div");
+   div.className="p-4 rounded-xl shadow bg-white dark:bg-gray-800";
+
+   const pfp=p.get("pfp")?.url()||"https://placehold.co/40";
+
+   const content = escapeHtml(p.get("content") || "");
+   const mediaType = p.get("mediaType") || "none";
+
+   const images = p.get("images") || [];
+   const video = p.get("video") || null;
+   const videoThumb = p.get("videoThumb") || null;
+
+   const imagesHtml = (mediaType==="images") ? renderImagesGallery(images) : "";
+   const videoHtml = (mediaType==="video") ? renderVideoBlock(video, videoThumb, p.id) : "";
+
+   div.innerHTML=`
+     <div class="flex gap-3">
+       <img src="${pfp}" class="w-10 h-10 rounded-full">
+       <div class="w-full">
+         <strong>@${escapeHtml(p.get("username"))}</strong>
+         ${content ? `<p class="whitespace-pre-wrap">${content}</p>` : ``}
+         ${imagesHtml}
+         ${videoHtml}
+         <button class="likePost text-blue-500 mt-2">♥ Like</button>
+       </div>
+     </div>
+     <div class="comments mt-2"></div>
+     <input class="commentInput w-full border rounded mt-2 p-1 dark:bg-gray-700" placeholder="Comment">
+   `;
+
+   div.querySelector(".likePost").onclick=()=>toggleLike("post",p.id);
+
+   // Wire video controls after insertion
+   if(mediaType==="video") wireUpVideoControls(div, p.id);
+
+   const commentsDiv=div.querySelector(".comments");
+   const commentInput=div.querySelector(".commentInput");
+
+   commentInput.onkeydown=async e=>{
+     if(e.key==="Enter"){
+       const Comment=Parse.Object.extend("Comments");
+       const c=new Comment();
+       c.set("postId",p.id);
+       c.set("username",Parse.User.current().get("username"));
+       c.set("content",commentInput.value);
+       await c.save();
+       commentInput.value="";
+       loadComments(p.id,commentsDiv);
+     }
+   };
+
+   loadComments(p.id,commentsDiv);
+   feed.appendChild(div);
+ });
+}
+
+/* ----------------------
+   LOGIN
+-----------------------*/
+loginBtn.onclick=async()=>{
+ try{
+  await Parse.User.logIn(username.value,password.value);
+  authModal.classList.add("hidden");
+  loadPosts();
+  loadFollowing();
+ }catch(e){alert(e.message)}
+};
+
+logoutBtn.onclick=async()=>{await Parse.User.logOut();location.reload();};
+
+if(Parse.User.current()){
+ authModal.classList.add("hidden");
+ loadPosts();
+ loadFollowing();
+}
+
+});
+</script>
+
+</body>
+</html>
